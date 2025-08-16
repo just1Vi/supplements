@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Энциклопедия БАДов — БАД‑гид</title>
+  <meta name="description" content="Поиск и фильтры по добавкам: механизмы, форма, дозы, время приема, риски, взаимодействия.">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html"><span class="brand-logo">⚗️</span><span class="brand-name">БАД‑гид</span></a>
+      <nav class="nav">
+        <a href="encyclopedia.html" aria-current="page">Энциклопедия</a>
+        <a href="protocols.html">Протоколы</a>
+        <a href="safety.html">Безопасность</a>
+        <a href="interactions.html">Взаимодействия</a>
+        <a href="quiz.html" class="btn btn-primary">Подбор</a>
+        <a href="faq.html">FAQ</a>
+        <a href="labels.html">Гид по выбору</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">🌗</button>
+    </div>
+  </header>
+
+  <main class="container section">
+    <h1>Энциклопедия добавок</h1>
+    <p class="lead">Найдите нужную добавку по названию, цели или механизму. Нажмите на карточку для подробностей.</p>
+
+    <div class="form-row" style="margin: 10px 0 14px; flex-wrap: wrap;">
+      <input type="search" id="encySearch" placeholder="Поиск: магний, сон, стресс, омега, иммунитет…" style="flex:1; min-width: 260px;">
+      <select id="filterGoal" class="select">
+        <option value="">Цель</option>
+        <option>Сон</option>
+        <option>Стресс</option>
+        <option>Фокус</option>
+        <option>Иммунитет</option>
+        <option>Выносливость</option>
+        <option>ЖКТ</option>
+        <option>Кожа</option>
+      </select>
+      <select id="filterEvidence" class="select">
+        <option value="">Доказательность</option>
+        <option value="A">A — сильная база</option>
+        <option value="B">B — умеренная база</option>
+        <option value="C">C — ограниченная база</option>
+      </select>
+      <select id="filterRisk" class="select">
+        <option value="">Риск</option>
+        <option value="low">Низкий</option>
+        <option value="moderate">Умеренный</option>
+        <option value="high">Высокий</option>
+      </select>
+    </div>
+
+    <div id="results" class="grid grid-3"></div>
+    <p id="emptyState" class="small" style="display:none;">Ничего не найдено. Попробуйте изменить запрос или фильтры.</p>
+
+    <hr class="sep">
+    <div class="notice small">Информация предоставляется для общего ознакомления. Для индивидуального назначения учтите анализы, сопутствующие состояния и лекарства.</div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-nav">
+        <a href="safety.html">Безопасность</a>
+        <a href="interactions.html">Взаимодействия</a>
+        <a href="faq.html">FAQ</a>
+        <a href="labels.html">Гид по выбору</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/main.js"></script>
+  <script>
+    (function() {
+      const q = Utils.getQueryParam('q');
+      const input = document.getElementById('encySearch');
+      if (q) input.value = q;
+
+      const results = document.getElementById('results');
+      const empty = document.getElementById('emptyState');
+      const selectGoal = document.getElementById('filterGoal');
+      const selectEvidence = document.getElementById('filterEvidence');
+      const selectRisk = document.getElementById('filterRisk');
+
+      function matchesFilters(item) {
+        const query = input.value.trim();
+        const byQuery = !query || (
+          Utils.includesTokens(item.name + ' ' + item.aliases.join(' ') + ' ' + item.goals.join(' ') + ' ' + item.mechanism, query)
+        );
+        const byGoal = !selectGoal.value || item.goals.map(Utils.normalize).includes(Utils.normalize(selectGoal.value));
+        const byEvidence = !selectEvidence.value || item.evidence === selectEvidence.value;
+        const byRisk = !selectRisk.value || item.risk === selectRisk.value;
+        return byQuery && byGoal && byEvidence && byRisk;
+      }
+
+      function renderItem(item) {
+        const card = document.createElement('a');
+        card.className = 'card';
+        card.href = `supplement.html?slug=${encodeURIComponent(item.slug)}`;
+        card.style.textDecoration = 'none';
+
+        const title = document.createElement('h3');
+        title.textContent = item.name;
+        card.appendChild(title);
+
+        const p = document.createElement('p');
+        p.textContent = item.summary;
+        card.appendChild(p);
+
+        const badges = document.createElement('div');
+        badges.className = 'badges';
+        badges.appendChild(Utils.makeBadge(item.goals.join(', ')));
+        badges.appendChild(Utils.makeBadge('Риск: ' + ({low:'низкий', moderate:'умеренный', high:'высокий'}[item.risk]||''), item.risk === 'low' ? 'good' : item.risk === 'high' ? 'danger' : 'warn'));
+        badges.appendChild(Utils.evidenceLabel(item.evidence));
+        card.appendChild(badges);
+        return card;
+      }
+
+      function render() {
+        const filtered = SUPPLEMENTS.filter(matchesFilters);
+        Utils.renderList(results, filtered, renderItem);
+        empty.style.display = filtered.length ? 'none' : 'block';
+      }
+
+      input.addEventListener('input', render);
+      selectGoal.addEventListener('change', render);
+      selectEvidence.addEventListener('change', render);
+      selectRisk.addEventListener('change', render);
+
+      render();
+    })();
+  </script>
+</body>
+</html>
