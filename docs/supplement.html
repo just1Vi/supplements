@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Добавка — БАД‑гид</title>
+  <meta name="description" content="Подробности о добавке: механизмы, формы, дозировки, время приема, взаимодействия, риски и качество.">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html"><span class="brand-logo">⚗️</span><span class="brand-name">БАД‑гид</span></a>
+      <nav class="nav">
+        <a href="encyclopedia.html">Энциклопедия</a>
+        <a href="protocols.html">Протоколы</a>
+        <a href="safety.html">Безопасность</a>
+        <a href="interactions.html">Взаимодействия</a>
+        <a href="quiz.html" class="btn btn-primary">Подбор</a>
+        <a href="faq.html">FAQ</a>
+        <a href="labels.html">Гид по выбору</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">🌗</button>
+    </div>
+  </header>
+
+  <main class="container section" id="content">
+    <p class="small">Загрузка…</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-nav">
+        <a href="safety.html">Безопасность</a>
+        <a href="interactions.html">Взаимодействия</a>
+        <a href="faq.html">FAQ</a>
+        <a href="labels.html">Гид по выбору</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/main.js"></script>
+  <script>
+    (function(){
+      const slug = Utils.getQueryParam('slug');
+      const item = SUPPLEMENTS.find(s => s.slug === slug);
+      const container = document.getElementById('content');
+      if (!item) {
+        container.innerHTML = '<p class="small">Не найдено. Вернуться в <a href="encyclopedia.html">энциклопедию</a>.</p>';
+        return;
+      }
+
+      const wrap = document.createElement('div');
+      const title = document.createElement('h1');
+      title.textContent = item.name;
+      wrap.appendChild(title);
+
+      const badges = document.createElement('div');
+      badges.className = 'badges';
+      badges.appendChild(Utils.makeBadge(item.goals.join(', ')));
+      badges.appendChild(Utils.makeBadge('Риск: ' + ({low:'низкий', moderate:'умеренный', high:'высокий'}[item.risk]||''), item.risk === 'low' ? 'good' : item.risk === 'high' ? 'danger' : 'warn'));
+      badges.appendChild(Utils.evidenceLabel(item.evidence));
+      wrap.appendChild(badges);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid grid-2';
+
+      function section(titleText, bodyText) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const h = document.createElement('h3');
+        h.textContent = titleText;
+        const p = document.createElement('p');
+        p.textContent = bodyText;
+        card.appendChild(h); card.appendChild(p);
+        return card;
+      }
+
+      grid.appendChild(section('Кратко', item.summary));
+      grid.appendChild(section('Механизм', item.mechanism));
+      grid.appendChild(section('Формы', item.forms));
+      grid.appendChild(section('Дозировки', item.dosing));
+      grid.appendChild(section('Время приёма', item.timing));
+      grid.appendChild(section('Взаимодействия', item.interactions));
+      grid.appendChild(section('Осторожности', item.cautions));
+      grid.appendChild(section('Качество', item.quality));
+
+      const notes = document.createElement('div');
+      notes.className = 'card';
+      const h4 = document.createElement('h3'); h4.textContent = 'Примечания к доказательности';
+      const p4 = document.createElement('p'); p4.textContent = item.evidence_notes || '';
+      notes.appendChild(h4); notes.appendChild(p4);
+
+      const stack = document.createElement('div');
+      stack.className = 'card';
+      const hs = document.createElement('h3'); hs.textContent = 'Сочетается с';
+      const ps = document.createElement('p'); ps.textContent = (item.stacks||[]).join(', ');
+      stack.appendChild(hs); stack.appendChild(ps);
+
+      const src = document.createElement('div');
+      src.className = 'card';
+      const hs2 = document.createElement('h3'); hs2.textContent = 'Пищевые источники';
+      const ps2 = document.createElement('p'); ps2.textContent = item.sources || '';
+      src.appendChild(hs2); src.appendChild(ps2);
+
+      wrap.appendChild(grid);
+      wrap.appendChild(notes);
+      wrap.appendChild(stack);
+      wrap.appendChild(src);
+
+      const back = document.createElement('p');
+      back.className = 'small';
+      back.innerHTML = 'Вернуться в <a href="encyclopedia.html">энциклопедию</a>';
+      wrap.appendChild(back);
+
+      container.innerHTML = '';
+      container.appendChild(wrap);
+    })();
+  </script>
+</body>
+</html>
