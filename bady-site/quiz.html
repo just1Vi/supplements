@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Подбор по цели — БАД‑гид</title>
+  <meta name="description" content="Быстрый подбор: выберите цель и ограничения — получите минимальный стартовый набор с дозировками и временем приёма.">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html"><span class="brand-logo">⚗️</span><span class="brand-name">БАД‑гид</span></a>
+      <nav class="nav">
+        <a href="encyclopedia.html">Энциклопедия</a>
+        <a href="protocols.html">Протоколы</a>
+        <a href="safety.html">Безопасность</a>
+        <a href="interactions.html">Взаимодействия</a>
+        <a href="quiz.html" aria-current="page" class="btn btn-primary">Подбор</a>
+        <a href="faq.html">FAQ</a>
+        <a href="labels.html">Гид по выбору</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Переключить тему">🌗</button>
+    </div>
+  </header>
+
+  <main class="container section">
+    <h1>Подбор по цели</h1>
+    <p class="lead">Выберите цель и отметьте ограничения. Мы предложим минимальный набор с учётом безопасности.</p>
+
+    <div class="card">
+      <div class="chips" id="goalChips"></div>
+      <hr class="sep">
+      <div class="form-row" style="flex-wrap:wrap;">
+        <label><input type="checkbox" id="caffeineSensitive"> Чувствительность к кофеину</label>
+        <label><input type="checkbox" id="avoidSedation"> Избегать седативных эффектов днём</label>
+        <label><input type="checkbox" id="vegetarian"> Вегетарианство</label>
+      </div>
+      <div id="quizResult" style="margin-top:12px"></div>
+    </div>
+
+    <hr class="sep">
+    <div class="notice small">Это образовательные рекомендации. Учтите взаимодействия и личные противопоказания.</div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-nav">
+        <a href="safety.html">Безопасность</a>
+        <a href="encyclopedia.html">Энциклопедия</a>
+        <a href="faq.html">FAQ</a>
+        <a href="labels.html">Гид по выбору</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script src="assets/data.js"></script>
+  <script src="assets/main.js"></script>
+  <script>
+    (function(){
+      const goals = ['Сон', 'Стресс', 'Фокус', 'Иммунитет', 'Выносливость', 'ЖКТ', 'Кожа'];
+      const chipsBox = document.getElementById('goalChips');
+      const result = document.getElementById('quizResult');
+
+      const state = { goal: '', caffeineSensitive: false, avoidSedation: false, vegetarian: false };
+
+      function renderChips() {
+        chipsBox.innerHTML = '';
+        goals.forEach(g => {
+          const chip = document.createElement('div');
+          chip.className = 'chip' + (state.goal === g ? ' active' : '');
+          chip.textContent = g;
+          chip.addEventListener('click', () => { state.goal = state.goal === g ? '' : g; renderChips(); renderResult(); });
+          chipsBox.appendChild(chip);
+        });
+      }
+
+      function linkTo(slug, text) {
+        const a = document.createElement('a');
+        a.href = `supplement.html?slug=${encodeURIComponent(slug)}`;
+        a.textContent = text;
+        a.className = 'btn btn-link';
+        return a;
+      }
+
+      function p(text) { const el = document.createElement('p'); el.textContent = text; return el; }
+
+      function renderResult() {
+        result.innerHTML = '';
+        if (!state.goal) { result.appendChild(p('Выберите цель, чтобы увидеть рекомендации.')); return; }
+
+        const box = document.createElement('div');
+        box.className = 'grid grid-2';
+
+        const card = document.createElement('div'); card.className = 'card';
+        const h = document.createElement('h3'); h.textContent = 'Минимальный старт'; card.appendChild(h);
+
+        if (state.goal === 'Сон') {
+          card.appendChild(p('1) Магний глицинат 200–400 мг вечером за 1–2 часа до сна.'));
+          card.appendChild(linkTo('magnesium-glycinate', 'Подробнее о магнии'));
+          if (!state.avoidSedation) {
+            card.appendChild(p('2) L‑теанин 100–200 мг за 30–60 минут до сна при тревоге.'));
+            card.appendChild(linkTo('l-theanine', 'Подробнее о теанине'));
+          }
+        } else if (state.goal === 'Стресс') {
+          card.appendChild(p('1) Ашваганда 300–600 мг/сут курсом 6–8 недель.'));
+          card.appendChild(linkTo('ashwagandha', 'Подробнее об ашваганде'));
+          card.appendChild(p('2) Магний 200–400 мг вечером.'));
+          card.appendChild(linkTo('magnesium-glycinate', 'Подробнее о магнии'));
+        } else if (state.goal === 'Фокус') {
+          if (!state.caffeineSensitive) {
+            card.appendChild(p('1) Кофеин + L‑теанин 100 мг + 100 мг до задачи.'));
+            card.appendChild(linkTo('l-theanine', 'Подробнее о теанине'));
+          } else {
+            card.appendChild(p('1) L‑теанин 100–200 мг без кофеина как мягкая альтернатива.'));
+            card.appendChild(linkTo('l-theanine', 'Подробнее о теанине'));
+          }
+          card.appendChild(p('2) Креатин 3–5 г/сут утром с едой.'));
+          card.appendChild(linkTo('creatine-monohydrate', 'Подробнее о креатине'));
+        } else if (state.goal === 'Иммунитет') {
+          card.appendChild(p('1) Витамин D3 по анализам; типично 1000–2000 МЕ/сут.'));
+          card.appendChild(linkTo('vitamin-d3', 'Подробнее о витамине D3'));
+          card.appendChild(p('2) Омега‑3 1–2 г EPA+DHA/сут с едой.'));
+          card.appendChild(linkTo('omega-3-epa-dha', 'Подробнее об омега‑3'));
+        } else if (state.goal === 'Выносливость') {
+          card.appendChild(p('1) Креатин моногидрат 3–5 г/сут ежедневно.'));
+          card.appendChild(linkTo('creatine-monohydrate', 'Подробнее о креатине'));
+          card.appendChild(p('2) Омега‑3 1–2 г EPA+DHA/сут.'));
+          card.appendChild(linkTo('omega-3-epa-dha', 'Подробнее об омега‑3'));
+        } else if (state.goal === 'ЖКТ') {
+          card.appendChild(p('1) Пробиотик штамм‑специфично 2–8 недель.'));
+          card.appendChild(linkTo('probiotics', 'Подробнее о пробиотиках'));
+        } else if (state.goal === 'Кожа') {
+          card.appendChild(p('1) Омега‑3 1–2 г EPA+DHA/сут.'));
+          card.appendChild(linkTo('omega-3-epa-dha', 'Подробнее об омега‑3'));
+        }
+
+        const card2 = document.createElement('div'); card2.className = 'card';
+        const h2 = document.createElement('h3'); h2.textContent = 'Примечания по безопасности'; card2.appendChild(h2);
+        card2.appendChild(p('Проверяйте взаимодействия с лекарствами. Начинайте с половинной дозы и повышайте по переносимости.'));
+
+        box.appendChild(card); box.appendChild(card2);
+        result.appendChild(box);
+      }
+
+      renderChips();
+      renderResult();
+
+      ['caffeineSensitive','avoidSedation','vegetarian'].forEach(id => {
+        document.getElementById(id).addEventListener('change', (e) => {
+          state[id] = !!e.target.checked; renderResult();
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
